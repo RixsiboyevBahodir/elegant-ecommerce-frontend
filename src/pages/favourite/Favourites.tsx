@@ -15,12 +15,12 @@ export default function Favourites() {
   }
 
   const { addWishlist, productId } = useWishlist()
-  const { addFavourite, productId: favouriteId } = useFavourite()
+  const { addFavourite } = useFavourite()
 
 
   const user = JSON.parse(localStorage.getItem("user")!)
   const array = user.favourite?.map((item: any) => item._ref)
-  const { data, isLoading } = useGetProductByIdArrQuery(array)
+  const { data } = useGetProductByIdArrQuery(array)
   const favourites = user.favourite
   const wishlist = user.wishlist
 

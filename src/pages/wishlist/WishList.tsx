@@ -18,7 +18,7 @@ export default function WishList() {
 
   const { addWishlist, productId } = useWishlist()
 
-  const { data, isLoading } = useGetProductByIdArrQuery(array)
+  const { data } = useGetProductByIdArrQuery(array)
 
   if (array?.length === 0) return <p>Wishlist bo'sh</p>
 

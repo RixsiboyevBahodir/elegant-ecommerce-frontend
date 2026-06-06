@@ -24,7 +24,7 @@ export default function Home() {
     const wishlist = Array.isArray(user.wishlist) ? user.wishlist : []
 
     const { addWishlist, productId } = useWishlist()
-    const { addFavourite, productId: favouriteId } = useFavourite()
+    const { addFavourite } = useFavourite()
 
     if (isLoading) {
         return (

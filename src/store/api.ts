@@ -3,16 +3,24 @@ import { createApi } from '@reduxjs/toolkit/query/react'
 import { client } from '@/clinet/clinet'
 
 interface DataType {
+    _id: string
     name: string
-    surname: string
     info: string
     price: string
-    _id: string
     thumbnail: {
         asset: {
             _ref: string
         }
     }
+    imgs?: {
+        asset: {
+            _ref: string
+        }
+    }[]
+    colors?: string[]
+    discoundPrice?: number
+    discountExpire?: string
+    quantity?: number
 }
 
 interface ReviewType {

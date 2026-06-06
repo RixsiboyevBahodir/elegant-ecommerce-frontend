@@ -131,6 +131,10 @@
   }
 }
 
+html{
+  scroll-behavior: smooth;
+}
+
 body {
   font-family: "Google Sans", sans-serif;
   font-optical-sizing: auto;

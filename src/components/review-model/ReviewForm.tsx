@@ -26,8 +26,9 @@ import {
     InputGroupTextarea,
 } from "@/components/ui/input-group"
 import { useParams } from "react-router-dom"
-import { useCreateReviewMutation } from "@/store/api"
+import { useCreateReviewMutation, useUpdateReviewMutation, type ReviewType } from "@/store/api"
 import { toast } from "sonner"
+import { useEffect } from "react"
 
 const formSchema = z.object({
     rating: z
@@ -40,28 +41,61 @@ const formSchema = z.object({
         .max(100, "Description must be at most 100 characters."),
 })
 
-export default function ReviewForm({ setOpen }: { setOpen: any }) {
-    const [createReview, { isLoading }] = useCreateReviewMutation()
+export default function ReviewForm({ setOpen, review }: {
+    setOpen: (open: boolean) => void
+    review?: ReviewType
+}) {
+
+    const [createReview, { isLoading: isCreating }] = useCreateReviewMutation()
+    const [updateReview, { isLoading: isUpdating }] = useUpdateReviewMutation()
+    const isEdit = Boolean(review)
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
-            rating: 5,
-            description: "",
+            rating: review?.rating ?? 5,
+            description: review?.comment ?? "",
         },
+
     })
 
     const params = useParams()
 
     const userData = JSON.parse(localStorage.getItem('user')!)
+    const isLoading = isCreating || isUpdating
+
+    useEffect(() => {
+        if (review) {
+            form.reset({
+                rating: review.rating,
+                description: review.comment,
+            })
+        }
+    }, [review, form])
+
 
     async function onSubmit(data: z.infer<typeof formSchema>) {
+        if (isEdit && review) {
+            try {
+                await updateReview({
+                    id: review._id,
+                    rating: data.rating,
+                    comment: data.description,
+                }).unwrap()
+                toast.success("Review updated successfully")
+                setOpen(false)
+            } catch {
+                toast.error("Review update failed")
+            }
+            return
+        }
+
         const product = {
             _ref: params?.id,
             _type: "reference"
         }
         const user = {
-            _ref: userData?.id,
+            _ref: userData?._id,
             _type: "reference"
         }
         const mainData = {
@@ -80,14 +114,14 @@ export default function ReviewForm({ setOpen }: { setOpen: any }) {
             })
 
         } catch (error) {
-            console.log("Xatolik yuz berdi")
+            toast.error("Review creation failed")
         }
     }
 
     return (
         <Card className="w-full sm:max-w-md">
             <CardHeader>
-                <CardTitle>Review</CardTitle>
+                <CardTitle>{isEdit ? "Edit review" : "Review"}</CardTitle>
             </CardHeader>
             <CardContent>
                 <form id="form-rhf-demo" onSubmit={form.handleSubmit(onSubmit)}>
@@ -155,7 +189,7 @@ export default function ReviewForm({ setOpen }: { setOpen: any }) {
                         Reset
                     </Button>
                     <Button type="submit" form="form-rhf-demo" disabled={isLoading}>
-                        Submit
+                        {isLoading ? "Saving..." : isEdit ? "Update" : "Submit"}
                     </Button>
                 </Field>
             </CardFooter>

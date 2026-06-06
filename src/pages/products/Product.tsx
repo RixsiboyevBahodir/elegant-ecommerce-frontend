@@ -2,24 +2,52 @@ import { urlFor } from "@/clinet/clinet"
 import ReviewModel from "@/components/review-model/ReviewModel"
 import useFavourite from "@/hooks/useFavourite"
 import useWishlist from "@/hooks/useWishlist"
-import { useGetProductByIdQuery, useGetReviewQuery } from "@/store/api"
+import { useDeleteReviewMutation, useGetProductByIdQuery, useGetReviewQuery, type ReviewType } from "@/store/api"
 import { useParams } from "react-router-dom"
 import { SlHeart } from "react-icons/sl";
 import { TbShoppingBagCheck, TbShoppingBagPlus } from "react-icons/tb";
 import { FaHeart } from "react-icons/fa"
+import { useEffect, useState } from "react"
+import Zoom from 'react-medium-image-zoom'
+import 'react-medium-image-zoom/dist/styles.css'
+import { FaRegTrashCan } from "react-icons/fa6";
+import { LuPencil } from "react-icons/lu";
 
 export default function Product() {
 
     const params = useParams()
     const { data, isLoading } = useGetProductByIdQuery(params.id!)
     const { data: dataReview, isLoading: LoadingReview } = useGetReviewQuery(params.id)
+    const [deleteReview, { isLoading: isDeleteing }] = useDeleteReviewMutation()
+
+    const [selectedReview, setSelectedReview] = useState<ReviewType | null>(null)
+    const [reviewDialogOpen, setReviewDialogOpen] = useState(false)
 
     const { addWishlist, productId } = useWishlist()
     const { addFavourite, productId: favouriteId } = useFavourite()
 
-    const user = JSON.parse(localStorage.getItem("user")!)
-    const favourites = user.favourite
-    const wishlist = user.wishlist
+    const user = JSON.parse(localStorage.getItem("user") || '{}')
+    const favourites = Array.isArray(user?.favourite) ? user.favourite : []
+    const wishlist = Array.isArray(user?.wishlist) ? user.wishlist : []
+    const currentUserId = user?._id
+
+
+    const onDeleteReview = async (id: any) => await deleteReview(id)
+
+    const isOwnReview = (review: { user?: { _id?: string } }) =>
+        Boolean(currentUserId && review.user?._id === currentUserId)
+
+    const openEditReview = (review: ReviewType) => {
+        if (!isOwnReview(review)) return
+        setSelectedReview(review)
+        setReviewDialogOpen(true)
+    }
+
+    useEffect(() => {
+        setTimeout(() => {
+            window.scrollTo(0, 0)
+        }, 200);
+    }, [])
 
     if (isLoading) {
         return (
@@ -41,11 +69,13 @@ export default function Product() {
             <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
                 <div className="grid gap-12 lg:grid-cols-2">
                     <div className="overflow-hidden rounded-3xl border border-gray-200 bg-gray-50">
-                        <img
-                            src={urlFor(data!.thumbnail.asset._ref).toString()}
-                            alt={data!.name}
-                            className="h-96 w-full object-cover"
-                        />
+                        <Zoom>
+                            <img
+                                src={urlFor(data!.thumbnail.asset._ref).toString()}
+                                alt={data!.name}
+                                className="h-96 w-full object-cover"
+                            />
+                        </Zoom>
                     </div>
 
                     <div className="space-y-8">
@@ -164,6 +194,12 @@ export default function Product() {
                                                     <span key={index}>{index < filledStars ? '★' : '☆'}</span>
                                                 ))}
                                             </div>
+                                            {isOwnReview(review) && (
+                                                <div className="flex gap-5">
+                                                    <FaRegTrashCan className="text-red-500 cursor-pointer" onClick={() => onDeleteReview(review._id)} />
+                                                    <LuPencil className="cursor-pointer" onClick={() => openEditReview(review)} />
+                                                </div>
+                                            )}
                                         </div>
                                         <p className="mt-4 text-sm leading-6 text-gray-600">{review.comment}</p>
                                     </article>
@@ -177,7 +213,13 @@ export default function Product() {
                     </div>
 
                     <div className="mt-6 sm:text-right">
-                        <ReviewModel title="Write a Review" />
+                        <ReviewModel
+                            title="Write a Review"
+                            open={reviewDialogOpen}
+                            setOpen={setReviewDialogOpen}
+                            review={selectedReview}
+                            onOpen={() => setSelectedReview(null)}
+                        />
                     </div>
                 </div>
             </section>

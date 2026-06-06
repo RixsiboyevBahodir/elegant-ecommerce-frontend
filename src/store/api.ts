@@ -15,20 +15,6 @@ interface DataType {
     }
 }
 
-interface UserType {
-    _id: string
-    name: string
-    surname: string
-    password: string
-    wishlist?: Array<{ _ref: string; _type: string }>
-    favourites?: Array<{ _ref: string; _type: string }>
-    image?: {
-        asset: {
-            _ref: string
-        }
-    }
-}
-
 interface ReviewType {
     _id: string
     rating: number
@@ -41,9 +27,10 @@ interface ReviewType {
     }
 }
 
+
 type SanityBaseQueryArgs = {
     query?: string
-    method?: 'GET' | 'POST'
+    method?: 'GET' | 'POST' | 'DELETE' | 'PATCH'
     params?: any
     body?: any
 }
@@ -60,16 +47,33 @@ const BaseQuery: BaseQueryFn<SanityBaseQueryArgs, unknown, unknown> = async ({ q
             return { data }
         }
 
+        if (method === 'DELETE') {
+            const data = await client.delete(body)
+            return { data }
+        }
+
+        if (method === 'PATCH') {
+            const { id, comment, rating } = body
+            const data = await client.patch(id).set({ comment, rating }).commit()
+            return { data }
+        }
+
         return { data: null }
     } catch (error) {
         console.log('Error...', error)
-        return { error }
+        return {
+            error: {
+                status: (error as any)?.statusCode ?? 500,
+                data: (error as any)?.message ?? String(error),
+            },
+        }
     }
 }
 
 export const api = createApi({
     reducerPath: 'api',
     baseQuery: BaseQuery,
+    tagTypes: ['review'],
     endpoints: ({ query, mutation }) => ({
         getProducts: query<DataType[], void>({
             query: () => ({
@@ -84,7 +88,7 @@ export const api = createApi({
         }),
         getReview: query<ReviewType[], string | undefined>({
             query: (id) => ({
-                query: `*[_type == 'review' && product._ref == $id] { _id, rating, comment, status, user->{name, surname} }`,
+                query: `*[_type == 'review' && product._ref == $id] { _id, rating, comment, status, user->{_id, name, surname} }`,
                 params: { id },
             }),
             providesTags: ["review"]
@@ -96,13 +100,34 @@ export const api = createApi({
             }),
             invalidatesTags: ["review"]
         }),
+        deleteReview: mutation<any, any>({
+            query: (id) => ({
+                method: "DELETE",
+                body: id
+            }),
+            invalidatesTags: ['review']
+        }),
+        updateReview: mutation<unknown, { id: string; rating: number; comment: string }>({
+            query: (payload) => ({
+                method: 'PATCH',
+                body: payload,
+            }),
+            invalidatesTags: ['review'],
+        }),
         getProductByIdArr: query<DataType[], string[]>({
             query: (array) => ({
                 query: `*[_type == "product" && _id in $array]`,
                 params: { array }
             })
+        }),
+        getUser: query<any, any>({
+            query: (id) => ({
+                query: `*[_type == "user" && _id == $id][0]`,
+                params: { id }
+            })
         })
     }),
 })
 
-export const { useGetProductByIdQuery, useGetProductsQuery, useGetReviewQuery, useCreateReviewMutation, useGetProductByIdArrQuery } = api
+export const { useGetProductByIdQuery, useGetProductsQuery, useGetReviewQuery, useCreateReviewMutation, useDeleteReviewMutation, useGetProductByIdArrQuery, useUpdateReviewMutation, useGetUserQuery } = api
+export type { ReviewType }

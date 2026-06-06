@@ -19,9 +19,9 @@ export default function Home() {
 
     const { isLoading, data } = useGetProductsQuery()
 
-    const user = JSON.parse(localStorage.getItem('user')!)
-    const favourites = user.favourite
-    const wishlist = user.wishlist
+    const user = JSON.parse(localStorage.getItem('user') || '{}')
+    const favourites = Array.isArray(user.favourite) ? user.favourite : []
+    const wishlist = Array.isArray(user.wishlist) ? user.wishlist : []
 
     const { addWishlist, productId } = useWishlist()
     const { addFavourite, productId: favouriteId } = useFavourite()

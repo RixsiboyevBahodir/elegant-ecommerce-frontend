@@ -65,7 +65,6 @@ export default function ContactForm() {
         const contactToTele = await sendContactToTelegram(telegramObj)
 
         if (contactToTele.ok) {
-            console.log(contactToTele)
             toast.success("")
             form.reset()
         }

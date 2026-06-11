@@ -81,7 +81,7 @@ const BaseQuery: BaseQueryFn<SanityBaseQueryArgs, unknown, unknown> = async ({ q
 export const api = createApi({
     reducerPath: 'api',
     baseQuery: BaseQuery,
-    tagTypes: ['review'],
+    tagTypes: ['review', 'address'],
     endpoints: ({ query, mutation }) => ({
         getProducts: query<DataType[], void>({
             query: () => ({
@@ -133,9 +133,35 @@ export const api = createApi({
                 query: `*[_type == "user" && _id == $id][0]`,
                 params: { id }
             })
-        })
+        }),
+        getAddress: query<any, string>({
+            query: (id) => ({
+                query: `*[_type=='address' && userId == $id]`,
+                params: { id }
+            }),
+            providesTags: ['address'],
+        }),
+        createAddress: mutation<any, any>({
+            query: (payload) => ({
+                method: 'POST',
+                body: payload,
+            }),
+            invalidatesTags: ['address'],
+        }),
     }),
 })
 
-export const { useGetProductByIdQuery, useGetProductsQuery, useGetReviewQuery, useCreateReviewMutation, useDeleteReviewMutation, useGetProductByIdArrQuery, useUpdateReviewMutation, useGetUserQuery } = api
+export const {
+    useGetProductByIdQuery,
+    useGetProductsQuery,
+    useGetReviewQuery,
+    useCreateReviewMutation,
+    useDeleteReviewMutation,
+    useGetProductByIdArrQuery,
+    useUpdateReviewMutation,
+    useGetUserQuery,
+    useGetAddressQuery,
+    useCreateAddressMutation,
+} = api
+
 export type { ReviewType }

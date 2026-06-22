@@ -6,9 +6,9 @@ import { AiOutlineYoutube } from "react-icons/ai";
 
 export default function Footer() {
   return (
-    <div className='mt-15'>
+    <div className='mt-15 flex flex-col'>
       <div className='relative flex justify-center'>
-        <img src={footer} alt="" className='w-full' />
+        <img src={footer} alt="" className='w-full max-h-95' />
         <div className='absolute top-40 flex flex-col items-center justify-center'>
           <p className='text-6xl mb-3'>Join Our Newsletter</p>
           <p className='text-2xl'>Sign up for deals, new products and promotions</p>

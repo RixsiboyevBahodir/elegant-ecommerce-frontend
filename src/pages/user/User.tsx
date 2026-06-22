@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import Address from "./components/Address";
+import Orders from "./components/Orders";
 
 interface User {
   _id: string;
@@ -39,7 +40,7 @@ export default function User() {
 
 
   return (
-    <div className="p-5 mt-10">
+    <div className="mt-10">
       <p>{user.name}</p>
       <p>{user.surname}</p>
       <button className="py-4 px-1.5 bg-amber-500 rounded-xl" onClick={refetch}>Refetch</button>
@@ -51,7 +52,7 @@ export default function User() {
         </TabsList>
       </Tabs>
       {
-        tabsValue == "account" ? <p>account</p> : tabsValue == "address" ? <Address/> : <p>orders</p>
+        tabsValue == "account" ? <p>account</p> : tabsValue == "address" ? <Address /> : <Orders />
       }
     </div>
   )

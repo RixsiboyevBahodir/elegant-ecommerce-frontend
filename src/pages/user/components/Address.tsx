@@ -1,59 +1,36 @@
-"use client"
-
 import { useGetAddressQuery } from "@/store/api"
 import { AddressForm } from "./AddressForm"
+import { FaRegTrashCan } from "react-icons/fa6";
+import { LuPencil } from "react-icons/lu";
 
-export default function AddressPage() {
-    const userId = typeof window !== "undefined" ? JSON.parse(localStorage.getItem("user") ?? "null")?._id : ""
+export default function Address() {
+    const userId = JSON.parse(localStorage.getItem("user")!)._id
     const { data, isLoading } = useGetAddressQuery(userId)
+    console.log(data)
 
     return (
-        <div className="mx-auto min-h-[calc(100vh-5rem)] max-w-6xl px-4 py-8 sm:px-6">
-            <div className="grid gap-6 lg:grid-cols-[1.35fr_0.85fr]">
-                <section className="rounded-[28px] border border-gray-200 bg-white p-6 shadow-sm">
-                    <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                        <div>
-                            <h1 className="text-2xl font-semibold text-slate-900">Saved Addresses</h1>
-                            <p className="mt-1 text-sm text-slate-500">Manage your delivery addresses here.</p>
-                        </div>
-                        <div className="rounded-full bg-amber-100 px-4 py-2 text-sm font-medium text-amber-700">
-                            {isLoading ? "Loading..." : `${data?.length ?? 0} address${data?.length === 1 ? "" : "es"}`}
-                        </div>
-                    </div>
-
-                    <div className="space-y-4">
-                        {isLoading ? (
-                            <div className="rounded-3xl border border-dashed border-slate-200 bg-slate-50 p-6 text-center text-sm text-slate-500">
-                                Loading your saved addresses...
+        <div className="grid grid-cols-2 gap-5">
+            <div className="border rounded-2xl p-5">
+                <p className="font-semibold text-xl">The Address You Entered</p>
+                <div className="grid grid-cols-2 gap-4 mt-4">
+                    {
+                        data?.map((item: any) => (
+                            <div key={item._id} className="rounded-2xl border border-gray-200 bg-gray-50 p-4 shadow-sm">
+                                <div className="space-y-2 text-sm text-gray-700">
+                                    <p><span className="font-semibold">City:</span> {item.address_name}</p>
+                                    <p><span className="font-semibold">House Address:</span> {item.location}</p>
+                                    <p><span className="font-semibold">Phone:</span> {item.phone_number}</p>
+                                </div>
+                                <div className="mt-4 flex gap-2">
+                                    <button className="rounded-xl border border-red-500 bg-white px-3 py-2 text-sm font-medium text-red-600 transition hover:bg-red-50 cursor-pointer flex items-center gap-1">Delete <FaRegTrashCan /></button>
+                                    <button className="rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-100 cursor-pointer flex items-center gap-1">Edit <LuPencil /></button>
+                                </div>
                             </div>
-                        ) : !data?.length ? (
-                            <div className="rounded-3xl border border-dashed border-slate-200 bg-slate-50 p-6 text-center text-sm text-slate-500">
-                                You don’t have any saved addresses yet.
-                            </div>
-                        ) : (
-                            data.map((item: any) => (
-                                <article key={item._id} className="rounded-3xl border border-gray-200 bg-slate-50 p-5 shadow-sm transition hover:border-gray-300">
-                                    <p className="text-lg font-semibold text-slate-900">{item.address_name}</p>
-                                    <p className="mt-2 text-sm text-slate-600">{item.location}</p>
-                                    <p className="mt-3 text-sm text-slate-500">{item.phone_number}</p>
-                                </article>
-                            ))
-                        )}
-                    </div>
-                </section>
-
-                <section className="rounded-[28px] border border-gray-200 bg-white p-6 shadow-sm">
-                    <div className="mb-6">
-                        <h2 className="text-xl font-semibold text-slate-900">Add New Address</h2>
-                        <p className="mt-1 text-sm text-slate-500">Fill in your address details to save a new delivery location.</p>
-                    </div>
-
-                    <div className="rounded-3xl border border-gray-200 bg-slate-50 p-5">
-                        <AddressForm />
-                    </div>
-                </section>
+                        ))
+                    }
+                </div>
             </div>
+            <AddressForm />
         </div>
     )
 }
-

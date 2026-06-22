@@ -45,8 +45,6 @@ export function AddressForm() {
     const userId = JSON.parse(localStorage.getItem("user")!)._id
     const [createAddress, { isLoading: isCreating }] = useCreateAddressMutation()
 
-    console.log(userId)
-
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
@@ -77,7 +75,7 @@ export function AddressForm() {
     }
 
     return (
-        <Card className="w-full sm:max-w-md">
+        <Card className="w-full">
             <CardHeader>
                 <CardTitle>Address</CardTitle>
             </CardHeader>
@@ -155,7 +153,7 @@ export function AddressForm() {
                     <Button type="button" variant="outline" onClick={() => form.reset()}>
                         Reset
                     </Button>
-                    <Button type="submit" form="form-rhf-demo">
+                    <Button type="submit" form="form-rhf-demo" disabled={isCreating}>
                         Submit
                     </Button>
                 </Field>

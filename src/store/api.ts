@@ -2,7 +2,7 @@ import type { BaseQueryFn } from '@reduxjs/toolkit/query'
 import { createApi } from '@reduxjs/toolkit/query/react'
 import { client } from '@/clinet/clinet'
 
-interface DataType {
+export interface DataType {
     _id: string
     name: string
     info: string

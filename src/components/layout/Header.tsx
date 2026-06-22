@@ -4,7 +4,7 @@ import headerImage from '../../assets/header.svg'
 export default function Header() {
   return (
     <div>
-        <Carousel className="w-full">
+        <Carousel className="w-full h-134">
         <CarouselContent>
           <CarouselItem >
             <img src={headerImage} alt="" className=" rounded-3xl" />

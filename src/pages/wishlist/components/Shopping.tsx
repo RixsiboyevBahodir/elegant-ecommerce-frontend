@@ -1,22 +1,30 @@
 import { urlFor } from "@/clinet/clinet"
 import { useGetProductByIdArrQuery, } from "@/store/api"
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import {
   Field,
-  FieldContent,
   FieldLabel,
   FieldTitle,
 } from "@/components/ui/field"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-
+import useShopping from "@/store/shoppingStore"
 export default function Shopping() {
 
   const user = JSON.parse(localStorage.getItem("user")!)
   const array: string[] = user.wishlist?.map((item: any) => item._ref) ?? []
   const { data, isLoading } = useGetProductByIdArrQuery(array)
 
-  const [shopCard, setShopCard] = useState<any>([])
-  const [subtotal, setSubtotal] = useState<any>(0)
+  const shopping = useShopping((state: any) => state.shoppingAdd)
+  const shoppingSubtotal = useShopping((state: any) => state.subtotal)
+  const shoppingExpress = useShopping((state: any) => state.express)
+  const shoppingShopCard = useShopping((state: any) => state.shopCard)
+
+  const [shopCard, setShopCard] = useState<any>(shoppingShopCard)
+  const [subtotal, setSubtotal] = useState<any>(shoppingSubtotal)
+  const [express, setExpress] = useState<any>(shoppingExpress)
+  const [total, setTotal] = useState<any>(subtotal)
+
+  console.log(total)
 
   useEffect(() => {
     const newData = data?.map((item: any) => ({
@@ -35,6 +43,18 @@ export default function Shopping() {
     })
   }, [shopCard])
 
+
+  useMemo(() => {
+    if (express === 'Express shipping') {
+      setTotal(subtotal + subtotal * 0.09)
+    }
+    else if (express === 'Pick Up') {
+      setTotal(subtotal - subtotal * 0.03)
+    } else {
+      setTotal(subtotal)
+    }
+  }, [express, subtotal])
+
   const increment = (id: any) => {
     const incData = shopCard?.map((item: any) => {
       if (item._id == id) {
@@ -52,10 +72,6 @@ export default function Shopping() {
     })
     setShopCard(dacData)
   }
-
-
-
-
 
   if (isLoading) return <p>Yuklanyapti...</p>
   if (!data?.length) return <p>Wishlist bo'sh</p>
@@ -114,35 +130,48 @@ export default function Shopping() {
         ))}
       </div>
       <div className="border border-[#141718] rounded-md p-3">
-        <p className="text-[18px] font-medium">Cart summary</p>
+        <p className="text-[18px] font-medium pb-2">Cart summary</p>
         <RadioGroup defaultValue="plus" className="max-w-sm">
-          <FieldLabel htmlFor="plus-plan">
+          <FieldLabel htmlFor="plus-plan" onClick={() => setExpress("Free shipping")}>
             <Field orientation="horizontal">
-              <FieldContent>
-                <FieldTitle>Free shipping</FieldTitle>
-              </FieldContent>
               <RadioGroupItem value="plus" id="plus-plan" />
+              <RadioGroup className="flex items-center justify-between">
+                <FieldTitle>Free shipping</FieldTitle>
+                <FieldTitle>$0.00</FieldTitle>
+              </RadioGroup>
             </Field>
           </FieldLabel>
-          <FieldLabel htmlFor="pro-plan">
+          <FieldLabel htmlFor="pro-plan" onClick={() => setExpress("Express shipping")}>
             <Field orientation="horizontal">
-              <FieldContent>
-                <FieldTitle>Express shipping</FieldTitle>
-              </FieldContent>
               <RadioGroupItem value="pro" id="pro-plan" />
+              <RadioGroup className="flex items-center justify-between">
+                <FieldTitle>Express shipping</FieldTitle>
+                <FieldTitle>+9%</FieldTitle>
+              </RadioGroup>
             </Field>
           </FieldLabel>
-          <FieldLabel htmlFor="enterprise-plan">
+          <FieldLabel htmlFor="enterprise-plan" onClick={() => setExpress("Pick Up")}>
             <Field orientation="horizontal">
-              <FieldContent>
-                <FieldTitle>Pick Up</FieldTitle>
-              </FieldContent>
               <RadioGroupItem value="enterprise" id="enterprise-plan" />
+              <RadioGroup className="flex items-center justify-between">
+                <FieldTitle>Pick Up</FieldTitle>
+                <FieldTitle>-3%</FieldTitle>
+              </RadioGroup>
             </Field>
           </FieldLabel>
         </RadioGroup>
-        <p>{subtotal}</p>
+        <div className="pt-4">
+          <div className="flex items-center justify-between border-b mb-5 pb-3 text-[14px]">
+            <p>Subtotal</p>
+            <p>${subtotal}</p>
+          </div>
+          <div className="flex items-center justify-between mb-5 pb-3">
+            <p className="font-bold">Total</p>
+            <p className="font-bold">${total}</p>
+          </div>
+          <button className="w-full bg-gray-800 text-white py-1.5 rounded-[9px] cursor-pointer hover:opacity-80 active:opacity-25 transition-all duration-100" onClick={() => shopping(subtotal, express, shopCard, 2)}>Checkout</button>
+        </div>
       </div>
-    </div>
+    </div >
   )
 }

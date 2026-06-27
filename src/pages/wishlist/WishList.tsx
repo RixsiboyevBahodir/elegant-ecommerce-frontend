@@ -2,11 +2,14 @@
 // import { useGetProductByIdArrQuery } from "@/store/api"
 // import { useNavigate } from "react-router-dom"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { useState } from "react"
 import Shopping from "./components/Shopping"
+import useShopping from "@/store/shoppingStore"
+import CheckOut from "./components/CheckOut"
 
 export default function WishList() {
-  const [tabsValue, setTabsValue] = useState("Shopping cart")
+  const shoppingState = useShopping((state: any) => state.state)
+
+  const changeState = useShopping((state: any) => state.changeState)
 
   // const navigate = useNavigate()
   // const productPage = (id: string) => {
@@ -26,15 +29,15 @@ export default function WishList() {
 
   return (
     <div>
-      <Tabs value={tabsValue}>
+      <Tabs value={shoppingState || 0}>
         <TabsList variant="line">
-          <TabsTrigger value="Shopping cart" onClick={() => setTabsValue("Shopping cart")}>Shopping cart 1</TabsTrigger>
-          <TabsTrigger value="Checkout details" onClick={() => setTabsValue("Checkout details")}>Checkout details 2</TabsTrigger>
-          <TabsTrigger value="Order complete" onClick={() => setTabsValue("Order complete")}>Order complete 3</TabsTrigger>
+          <TabsTrigger value={1} onClick={() => changeState(1)}>Shopping cart 1</TabsTrigger>
+          <TabsTrigger value={2} onClick={() => changeState(2)}>Checkout details 2</TabsTrigger>
+          <TabsTrigger value={3} onClick={() => changeState(3)}>Order complete 3</TabsTrigger>
         </TabsList>
       </Tabs>
       {
-        tabsValue == 'Shopping cart' ? <Shopping /> : tabsValue == "Checkout details" ? <p>Checkout details</p> : <p>Order complete</p>
+        shoppingState == 1 ? <Shopping /> : shoppingState == 2 ? <CheckOut/> : <p>Order complete</p>
       }
     </div>
   )
